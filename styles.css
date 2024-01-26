@@ -89,10 +89,10 @@ button {
   display: none;
 }
 .dot {
-  border-radius: 100%;
+  border-radius: 100% !important;
 }
 .pipe {
-  border-radius: 25%;
+  border-radius: 25% !important;
 }
 .r {
   background-color: red !important;
