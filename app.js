@@ -210,8 +210,8 @@ function FlowFreeSolverSimple(table) {
         let zeroPozXY = TheBestZeroChoiceXY(table);
         for (var k = 0; k < COLORS.length; k++) {
             let selectedColor = COLORS[k].toLowerCase();
-            console.log("we want to check following table:");
-            printTable(table);
+            // console.log("we want to check following table:");
+            // printTable(table);
             console.log(zeroPozXY[0], zeroPozXY[1], selectedColor);
             if (CheckFlowFreeConstraintsFor(table, selectedColor, zeroPozXY[0], zeroPozXY[1], 1)) {
                 table[zeroPozXY[0]][zeroPozXY[1]] = selectedColor;
@@ -223,7 +223,6 @@ function FlowFreeSolverSimple(table) {
                 console.log("backtracked\n");
             }
         }
-        console.log("bega")
         return false;
     } else {
         return true;
