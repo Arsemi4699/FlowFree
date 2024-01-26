@@ -5,6 +5,64 @@ const Y = "Y";
 const G = "G";
 const EMPTY = 0;
 const COLORS = [B, R, O, Y, G];
+const SIZE = 5;
+const tables = [[
+    [B, 0, 0, R, O],
+    [0, 0, 0, Y, 0],
+    [0, 0, Y, 0, 0],
+    [0, R, O, 0, G],
+    [0, B, G, 0, 0]
+],
+[
+    [0, Y, B, G, 0],
+    [0, 0, 0, R, 0],
+    [0, 0, R, 0, 0],
+    [Y, 0, 0, O, 0],
+    [B, 0, O, G, 0]
+],
+[
+    [0, 0, 0, R, G],
+    [0, 0, B, G, 0],
+    [R, 0, 0, 0, 0],
+    [O, B, 0, Y, O],
+    [0, 0, 0, 0, Y]
+],
+[
+    [R, 0, G, 0, Y],
+    [0, 0, B, 0, O],
+    [0, 0, 0, 0, 0],
+    [0, G, 0, Y, 0],
+    [0, R, B, O, 0]
+],
+[
+    [0, 0, 0, 0, 0],
+    [O, R, 0, R, O],
+    [Y, 0, 0, 0, 0],
+    [0, B, 0, G, 0],
+    [Y, G, 0, B, 0]
+],
+[
+    [R, 0, G, Y, B],
+    [B, 0, 0, 0, 0],
+    [0, 0, G, 0, 0],
+    [0, 0, R, Y, 0],
+    [0, 0, 0, 0, 0]
+],
+[
+    [0, G, 0, 0, 0],
+    [0, B, 0, R, 0],
+    [G, 0, O, 0, 0],
+    [Y, O, R, 0, 0],
+    [0, Y, B, 0, 0]
+],
+[
+    [G, Y, 0, Y, O],
+    [0, 0, 0, 0, 0],
+    [R, 0, O, B, 0],
+    [0, 0, 0, G, 0],
+    [0, 0, 0, R, B]
+]
+];
 // returns neighbor variables of variable at coordinate row,col
 function findNeighbors(table, row, col) {
     let neighbors = [];
@@ -173,62 +231,103 @@ function FlowFreeSolverSimple(table) {
 }
 // prints table of the game
 function printTable(table) {
-    let outText = "";
+    let innerHTMLtxt = `<div></div><table class="table">`;
+    let Class = "";
     for (let i = 0; i < SIZE; i++) {
-        for (let j = 0; j < SIZE; j++)
-            outText += table[i][j] + " ";
-        outText += "\n";
+        innerHTMLtxt += "<tr>";
+        for (let j = 0; j < SIZE; j++) {
+            if (COLORS.includes(table[i][j]))
+                Class = "dot " + table[i][j].toLowerCase();
+            else if (table[i][j] != EMPTY)
+                Class = "pipe " + table[i][j];
+            innerHTMLtxt += `<td class="${Class}"></td>`;
+            Class = "";
+        }
+        innerHTMLtxt += "</tr>";
     }
-    console.log(outText);
+    innerHTMLtxt += "</table></div>";
+    InputControl.innerHTML = innerHTMLtxt;
+
 }
-//test
-let table1 = [
-    [B, 0, 0, R, O],
-    [0, 0, 0, Y, 0],
-    [0, 0, Y, 0, 0],
-    [0, R, O, 0, G],
-    [0, B, G, 0, 0]
-];
-let table2 = [
-    [0, Y, B, G, 0],
-    [0, 0, 0, R, 0],
-    [0, 0, R, 0, 0],
-    [Y, 0, 0, O, 0],
-    [B, 0, O, G, 0]
-];
 
-var SIZE = 5;
 
-FlowFreeSolverSimple(table2);
-printTable(table2);
+function solve() {
+    setMessage("", "");
+    if (Gtable != null) {
+        setMessage("tipWait", "Loading...");
+        var startTime = performance.now();
+        setTimeout(() => {
+            let isSolved = false;
+            isSolved = FlowFreeSolverSimple(Gtable);
+            if (isSolved) {
+                var endTime = performance.now();
+                let timerMS = (endTime - startTime).toFixed(2);
+                CtrlretryBtn(1);
+                console.log("done");
+                setMessage("tipSucess", "solved in " + timerMS + "ms");
+                printTable(Gtable);
+                CtrlRunBox(0);
+            } else {
+                setMessage("tipError", "not solvable!");
+            }
+        }, 1);
+    }
+}
 
-// function MRV_H(table, row, col) {
-//     let MRV_V = 0;
-//     for (var k = 0; k < COLORS.length; k++) {
-//         let selectedColor = COLORS[k].toLowerCase();
-//         if (CheckFlowFreeConstraintsFor(table, selectedColor, row, col, 0)) {
-//             MRV_V += 1;
-//         }
-//     }
-//     return MRV_V;
-// }
-// function degree_H(table, row, col) {
-//     let Deg_V = 0;
-//     for (var i = 0; i < 9; i++) {
-//         if (table[row][i] == 0 && i != col && (i < parseInt(col / 3) * 3 || i > parseInt(col / 3) * 3 + 2)) {
-//             Deg_V += 1;
-//         }
-//     }
-//     for (var i = 0; i < 9; i++) {
-//         if (table[i][col] == 0 && i != row && (i < parseInt(row / 3) * 3 || i > parseInt(row / 3) * 3 + 2)) {
-//             Deg_V += 1;
-//         }
-//     }
-//     for (var i = parseInt(row / 3) * 3; i < parseInt(row / 3) * 3 + 3; i++)
-//         for (var j = parseInt(col / 3) * 3; j < parseInt(col / 3) * 3 + 3; j++)
-//             if (table[i][j] == 0 && (i != row || j != col)) {
-//                 Deg_V += 1;
-//             }
+function setMessage(className, info) {
+    if (className) tipbox.classList = [className];
+    else tipbox.classList = [];
+    tipbox.innerHTML = info;
+}
 
-//     return Deg_V;
-// }
+function CtrlRunBox(show) {
+    if (show) {
+        if (runBox.classList.contains("hideSolveBtn"))
+            runBox.classList.remove("hideSolveBtn");
+    } else {
+        if (!runBox.classList.contains("hideSolveBtn"))
+            runBox.classList.add("hideSolveBtn");
+    }
+}
+
+function CtrlretryBtn(show) {
+    if (show) {
+        if (retryBtn.classList.contains("hideSolveBtn"))
+            retryBtn.classList.remove("hideSolveBtn");
+    } else {
+        if (!retryBtn.classList.contains("hideSolveBtn"))
+            retryBtn.classList.add("hideSolveBtn");
+    }
+}
+
+function selectAGameBoard() {
+    let index = Math.floor(Math.random() * tables.length);
+    let selectedTable = tables[index];
+    Gtable = [];
+    for (let i = 0; i < SIZE; i++) {
+        let row = [];
+        for (let j = 0; j < SIZE; j++)
+            row.push(selectedTable[i][j]);
+        Gtable.push(row);
+    }
+}
+
+var Gtable = null;
+const runBtn = document.getElementById("run");
+const retryBtn = document.getElementById("retry");
+const runBox = document.getElementById("runBox");
+const tipbox = document.getElementById("tip");
+const InputControl = document.getElementById("inputControl");
+retryBtn.addEventListener("click", () => {
+    selectAGameBoard();
+    CtrlretryBtn(0);
+    setMessage("", "");
+    printTable(Gtable);
+    CtrlRunBox(1);
+});
+runBtn.addEventListener("click", () => {
+    solve();
+});
+
+selectAGameBoard();
+printTable(Gtable);
