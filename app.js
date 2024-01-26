@@ -5,6 +5,7 @@ const Y = "Y";
 const G = "G";
 const EMPTY = 0;
 const COLORS = [B, R, O, Y, G];
+var USED_COLOR = [];
 const SIZE = 5;
 const tables = [[
     [B, 0, 0, R, O],
@@ -63,6 +64,18 @@ const tables = [[
     [0, 0, 0, R, B]
 ]
 ];
+const debug = false;
+// returns used color in table
+function findUsedDots(table) {
+    let usedDots = [];
+    for (var i = 0; i < SIZE; i++)
+        for (var j = 0; j < SIZE; j++)
+            if (COLORS.includes(table[i][j]))
+                if (!usedDots.includes(table[i][j])) {
+                    usedDots.push(table[i][j]);
+                }
+    return usedDots;
+}
 // returns neighbor variables of variable at coordinate row,col
 function findNeighbors(table, row, col) {
     let neighbors = [];
@@ -86,7 +99,7 @@ function getAllDotsCordinates(table) {
     let DotsCordinates = [];
     for (var i = 0; i < SIZE; i++)
         for (var j = 0; j < SIZE; j++)
-            if (COLORS.includes(table[i][j]))
+            if (USED_COLOR.includes(table[i][j]))
                 DotsCordinates.push({ color: table[i][j], row: i, col: j })
     return DotsCordinates;
 }
@@ -126,7 +139,7 @@ function checkFullConnections(table, val, row, col) {
                     if (neighbor.toLowerCase() == table[i][j].toLowerCase())
                         countFriends += 1;
                 });
-                if (COLORS.includes(table[i][j])) {
+                if (USED_COLOR.includes(table[i][j])) {
                     if (countFriends < 1) {
                         table[row][col] = EMPTY;
                         return false;
@@ -148,7 +161,7 @@ function checkSemiConnections(table, val, row, col) {
     table[row][col] = val;
     for (var i = 0; i < SIZE; i++)
         for (var j = 0; j < SIZE; j++) {
-            if (COLORS.includes(table[i][j]) || table[i][j] == EMPTY)
+            if (USED_COLOR.includes(table[i][j]) || table[i][j] == EMPTY)
                 continue;
 
             let neighbors = findNeighbors(table, i, j);
@@ -208,19 +221,20 @@ function TheBestZeroChoiceXY(table) {
 function FlowFreeSolverSimple(table) {
     if (isTableNeedsToSolve(table)) {
         let zeroPozXY = TheBestZeroChoiceXY(table);
-        for (var k = 0; k < COLORS.length; k++) {
-            let selectedColor = COLORS[k].toLowerCase();
-            // console.log("we want to check following table:");
-            // printTable(table);
-            console.log(zeroPozXY[0], zeroPozXY[1], selectedColor);
-            if (CheckFlowFreeConstraintsFor(table, selectedColor, zeroPozXY[0], zeroPozXY[1], 1)) {
+        for (var k = 0; k < USED_COLOR.length; k++) {
+            let selectedColor = USED_COLOR[k].toLowerCase();
+            if (debug)
+                console.log(zeroPozXY[0], zeroPozXY[1], selectedColor);
+            if (CheckFlowFreeConstraintsFor(table, selectedColor, zeroPozXY[0], zeroPozXY[1], debug)) {
                 table[zeroPozXY[0]][zeroPozXY[1]] = selectedColor;
-                console.log("done\n");
+                if (debug)
+                    console.log("done\n");
                 if (FlowFreeSolverSimple(table)) {
                     return true;
                 }
                 table[zeroPozXY[0]][zeroPozXY[1]] = EMPTY;
-                console.log("backtracked\n");
+                if (debug)
+                    console.log("backtracked\n");
             }
         }
         return false;
@@ -249,10 +263,11 @@ function printTable(table) {
 
 }
 
-
+//solver connected to UI
 function solve() {
     setMessage("", "");
     if (Gtable != null) {
+        USED_COLOR = findUsedDots(Gtable);
         setMessage("tipWait", "Loading...");
         var startTime = performance.now();
         setTimeout(() => {
@@ -298,7 +313,7 @@ function CtrlretryBtn(show) {
             retryBtn.classList.add("hideSolveBtn");
     }
 }
-
+// select a random table from tables
 function selectAGameBoard() {
     let index = Math.floor(Math.random() * tables.length);
     let selectedTable = tables[index];
